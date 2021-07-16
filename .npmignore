@@ -1,0 +1,7 @@
+config
+src
+./.*
+scripts
+tsconfig.*
+webpack.*
+yarn.*
