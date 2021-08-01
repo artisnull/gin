@@ -1,6 +1,6 @@
 {
   "name": "@artisnull/gin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Library that handles state management, business logic, and api calls in an easy-to-use manner.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
