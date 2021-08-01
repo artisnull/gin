@@ -110,11 +110,9 @@ class Subscriber {
 
   private handleUpdate(updatedCargo) {
     const newSelectedCargo = this.select(updatedCargo);
-    requestAnimationFrame(() => {
       if (this.isSubscribed && !checkEqualOneLevelDeep(this.cargo, newSelectedCargo)) {
         this.update(newSelectedCargo);
       }
-    });
     return;
   }
 
