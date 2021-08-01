@@ -5,15 +5,12 @@ import {
   FetchMethods,
   RequestExtras,
   RequestMethods,
-  FlowMethods,
 } from '../../types';
 import MockDeed from './mockDeed';
-import MockFlowDeed from './mockFlowDeed';
 
 const requestMethods = new Set(['afterwards', 'catchError']);
 const fetchMethods = new Set(['withConfig', 'hits', 'withJSON', 'withBody', 'withQueryParams']);
 const actionMethods = new Set(['thatDoes', 'thenDoes']);
-const flowMethods = new Set(['whichMapsTo']);
 
 /*
   What is this?
@@ -24,7 +21,6 @@ const flowMethods = new Set(['whichMapsTo']);
 function thisCall(method: ActionMethods): MockDeed<ActionExtras>;
 function thisCall(method: FetchMethods): MockDeed<FetchExtras>;
 function thisCall(method: RequestMethods): MockDeed<RequestExtras>;
-function thisCall(method: FlowMethods): MockFlowDeed;
 function thisCall(method: any) {
   if (fetchMethods.has(method)) {
     return new MockDeed<FetchExtras>({ _method: method });
@@ -34,9 +30,6 @@ function thisCall(method: any) {
   }
   if (requestMethods.has(method)) {
     return new MockDeed<RequestExtras>({ _method: method });
-  }
-  if (flowMethods.has(method)) {
-    return new MockFlowDeed({ _method: method });
   }
   throw Error(`${method} is not a valid deed method`);
 }

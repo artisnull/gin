@@ -523,13 +523,13 @@ When you test your deeds or your `.sub` components, you'll want to use `gin`'s [
 Some other notes about testing:
 
 - Currently enzyme's `shallow` doesn't play nicely with all hooks. If you use `mockStores` with `stub.stores`, you will be able to use `shallow` in most cases. But if you run into issues, you may need to switch to `mount`.
-- Your testing environment may or may not have a `window` shim, and that may or may not have `window.fetch`. Because `gin` relies on this, you may need to mock out `window.fetch` in your testing environment.
+- Your testing environment may or may not have a `window` shim, and that may or may not have `global.fetch`. Because `gin` relies on this, you may need to mock out `global.fetch` in your testing environment.
 - `deeds` are async, so make sure you properly `await` a deed invocation, otherwise you may see race conditions or bugs
 - **When integration testing or testing a flow that involves a new `cargo` shipment, do the following:**
 
 ```tsx
 beforeAll(() => {
-  window.fetch = () => null; // shim window for our test environment
+  global.fetch = () => null; // shim window for our test environment
 });
 
 beforeEach(() => {

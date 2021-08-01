@@ -12,7 +12,7 @@ const testDeeds = [
 describe('Store', () => {
   beforeAll(() => {
     // @ts-ignore
-    window.fetch = async () => ({
+    global.fetch = async () => ({
       ok: true,
       headers: {
         get: () => 'application/javascript',
@@ -56,11 +56,6 @@ describe('Store', () => {
       }
     });
 
-    it('handles customFetch', () => {
-      const store = new Store({ cargo: {}, deeds: [], customFetch: true });
-      expect(store).toBeDefined();
-    });
-
     it('handles two stores with the same name', () => {
       const mockFn = jest.fn();
       try {
@@ -70,16 +65,6 @@ describe('Store', () => {
         mockFn();
       }
       expect(mockFn).not.toBeCalled();
-    });
-
-    it('handles publishing', () => {
-      const testFn = jest.fn();
-      Store.watch(testFn);
-      const store = new Store({ cargo: {}, deeds: [], name: 'test-store' });
-      const sub = new Subscriber({ selector: cargo => cargo, storeNames: ['test-store'] });
-      Store.unwatch(testFn);
-      expect(testFn).toHaveBeenCalled();
-      expect(Store.watchers.length).toEqual(0);
     });
 
     it('handles a batchTime of 0', () => {
@@ -255,7 +240,7 @@ describe('Store', () => {
     it('handles store shutdown when deed is running', async () => {
       jest.useFakeTimers();
       const delay = () =>
-        new Promise(resolve => {
+        new Promise<void>(resolve => {
           const timer = setTimeout(() => {
             clearTimeout(timer);
             resolve();
@@ -282,86 +267,13 @@ describe('Store', () => {
       }
     });
 
-    it('handles missing action deed process', async () => {
-      jest.useFakeTimers();
-
-      const testDeed = deed.action.called('test').thatDoes(async () => {
-        return { foo: 'bar' };
-      });
-
-      const store = new Store({
-        cargo: {},
-        deeds: [testDeed],
-        batchTime: 1000,
-      });
-
-      try {
-        store['_processes'].clear();
-        store['_deeds'].test();
-        jest.runAllTimers();
-        expect(store['_cargo']).toEqual({});
-      } catch (error) {
-        expect(error).toBeUndefined();
-      }
-    });
-
-    it('handles missing request deed process', async () => {
-      jest.useFakeTimers();
-
-      const testDeed = deed.request
-        .called('test')
-        .hits('')
-        .withConfig(() => ({}));
-
-      const store = new Store({
-        cargo: {},
-        deeds: [testDeed],
-        batchTime: 1000,
-      });
-
-      try {
-        store['_processes'].clear();
-        store['_deeds'].test();
-        store['_processes'].clear();
-
-        jest.runAllTimers();
-        expect(store['_cargo']).toEqual({});
-      } catch (error) {
-        expect(error).toBeUndefined();
-      }
-    });
-
-    it('handles missing flow deed process', async () => {
-      jest.useFakeTimers();
-
-      const testDeed = deed.flow.called('test');
-
-      const store = new Store({
-        cargo: {},
-        deeds: [testDeed],
-        batchTime: 1000,
-      });
-
-      try {
-        store['_processes'].clear();
-        store['_deeds'].test();
-        store['_processes'].clear();
-
-        jest.runAllTimers();
-        expect(store['_cargo']).toEqual({});
-      } catch (error) {
-        expect(error).toBeUndefined();
-      }
-    });
-
     it('exposes methods on assignment', () => {
       const store = new Store({ name: 'store', cargo: {}, deeds: [] });
       const cargo = Store.namedStores.get('store').getCargo();
       const deeds = Store.namedStores.get('store').getDeeds();
-      const px = Store.namedStores.get('store').getPx();
+
       expect(cargo).toEqual({});
       expect(deeds).toEqual({});
-      expect(px).toEqual(expect.any(Map));
     });
 
     it('handles mock and unmock', () => {

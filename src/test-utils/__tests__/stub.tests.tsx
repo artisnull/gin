@@ -11,10 +11,6 @@ const requestDeed = deed.request
 describe('stub', () => {
   const testFn = jest.fn();
 
-  beforeAll(() => {
-    window.fetch = () => null;
-  });
-
   beforeEach(jest.resetAllMocks);
 
   describe('deed', () => {

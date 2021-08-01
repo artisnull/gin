@@ -1,16 +1,14 @@
 import action from './action';
 import request from './request';
-import flow from './flow';
 // tslint:disable-next-line: class-name
+// eslint-disable-next-line @typescript-eslint/class-name-casing
 export interface deed {
   action: action;
   request: request;
-  flow: flow;
 }
 const deed: deed = {
   action,
   request,
-  flow,
 };
 
 export default deed;

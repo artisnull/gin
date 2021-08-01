@@ -1,6 +1,6 @@
 // tslint:disable: ban-types
 import Store from './store';
-import { Selector, obj, PubEvents } from '../types';
+import { Selector, obj } from '../types';
 import checkEqualOneLevelDeep from './checkEqualOneLevelDeep';
 import shortid from 'shortid';
 
@@ -35,13 +35,13 @@ class Subscriber {
   public cargo: obj<any> = {};
   public deeds: obj<any> = {};
 
-  private identity: symbol = Symbol(shortid.generate());
+  private identity = Symbol(shortid.generate());
   private selector: Selector;
 
   private listeners: Map<EventNames, Function[]> = genEventMap();
   private subscriptions: Map<string, Subscription> = new Map();
 
-  private isSubscribed: boolean = false;
+  private isSubscribed = false;
 
   constructor(args: SubscriberArgs) {
     const { storeNames, selector } = args;
@@ -69,12 +69,6 @@ class Subscriber {
 
     this.isSubscribed = true;
     this.emit('subscribe', { deeds, cargo: this.cargo });
-    Store.publish(PubEvents.SUB_SUBSCRIBED, {
-      deeds,
-      storeNames: this.storeNames,
-      cargo: this.cargo,
-      id: this.identity,
-    });
   };
 
   public unsubscribeAll() {
@@ -85,7 +79,6 @@ class Subscriber {
     this.listeners.clear();
     this.listeners = genEventMap();
     this.isSubscribed = false;
-    Store.publish(PubEvents.SUB_REMOVED, { id: this.identity, storeNames: this.storeNames });
   }
 
   public on: OnFunc = (eventName, listener) => {
@@ -103,23 +96,22 @@ class Subscriber {
   };
 
   private emit: EmitFunc = (eventName, payload) => {
-    this.listeners.get(eventName).forEach(listener => Promise.resolve(listener(payload)));
+    this.listeners.get(eventName).forEach(listener => listener(payload));
   };
 
   private select: SelectFunc = newCargo => this.selector({ ...this.getRawCargo(), ...newCargo });
 
   private handleUpdate(updatedCargo) {
     const newSelectedCargo = this.select(updatedCargo);
-      if (this.isSubscribed && !checkEqualOneLevelDeep(this.cargo, newSelectedCargo)) {
-        this.update(newSelectedCargo);
-      }
+    if (this.isSubscribed && !checkEqualOneLevelDeep(this.cargo, newSelectedCargo)) {
+      this.update(newSelectedCargo);
+    }
     return;
   }
 
   private update = cargo => {
     this.cargo = cargo;
     this.emit('update', cargo);
-    Store.publish(PubEvents.SUB_UPDATED, { cargo, id: this.identity });
   };
 }
 

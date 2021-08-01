@@ -5,7 +5,7 @@ describe('Store', () => {
   const mockFn = jest.fn();
 
   beforeAll(() => {
-    window.fetch = () => null;
+    global.fetch = () => null;
   });
 
   afterEach(() => {

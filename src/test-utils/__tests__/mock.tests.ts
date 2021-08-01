@@ -18,11 +18,6 @@ const requestDeed = deed.request
   .catchError((extras, e) => e);
 const requestDeedStringPath = deed.request.called('test').hits('/test');
 
-const flowDeed = deed.flow
-  .called('test')
-  .thatStartsWith(actionDeed)
-  .whichMapsTo(() => 'foo');
-
 describe('mock', () => {
   describe('action deed', () => {
     it('handles thatDoes args', () => {
@@ -106,29 +101,6 @@ describe('mock', () => {
         .fromThisDeed(requestDeedStringPath)
         .withArgs('/test')
         .thenAssert(result => expect(result).toEqual('/test'));
-    });
-  });
-
-  describe('flow deed', () => {
-    it('handles all', () => {
-      mock
-        .thisCall('whichMapsTo')
-        .fromThisDeed(flowDeed)
-        .withArgs('args')
-        .atThisStage(0)
-        .thenAssert(result => expect(result).toEqual('foo'));
-    });
-    it('throws when assertion is not a function', () => {
-      try {
-        mock
-          .thisCall('whichMapsTo')
-          .fromThisDeed(flowDeed)
-          .withArgs('args')
-          .atThisStage(0)
-          .thenAssert('test');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
     });
   });
 

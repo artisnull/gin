@@ -9,7 +9,7 @@ describe('Store', () => {
           'content-type': 'application/json',
           get: prop => headers[prop],
         };
-        window.fetch = jest.fn(async () => ({
+        global.fetch = jest.fn(async () => ({
           headers,
           ok: true,
           json: () => ({
@@ -39,10 +39,10 @@ describe('Store', () => {
         await store.getDeeds().get();
         await store.getDeeds().head();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test', {
           method: 'GET',
         });
-        expect(window.fetch).toHaveBeenNthCalledWith(2, 'https://test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(2, 'https://test', {
           method: 'HEAD',
         });
       });
@@ -68,7 +68,7 @@ describe('Store', () => {
 
         await store.getDeeds().get();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'function_path?test=true', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'function_path?test=true', {
           method: 'GET',
         });
       });
@@ -93,7 +93,7 @@ describe('Store', () => {
 
         await store.getDeeds().get();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test?test=true', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test?test=true', {
           method: 'GET',
         });
       });
@@ -141,7 +141,7 @@ describe('Store', () => {
         const store = Store.assign(Symbol, () => null).to('store');
         await store.getDeeds().get();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test', {
           test: true,
           method: 'GET',
         });
@@ -165,7 +165,7 @@ describe('Store', () => {
         const store = Store.assign(Symbol, () => null).to('store');
         await store.getDeeds().post();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test', {
           method: 'POST',
           body: { test: true },
         });
@@ -189,7 +189,7 @@ describe('Store', () => {
         const store = Store.assign(Symbol, () => null).to('store');
         await store.getDeeds().post();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test', {
           method: 'POST',
           body: JSON.stringify({ test: true }),
           headers: {
@@ -216,7 +216,7 @@ describe('Store', () => {
         const store = Store.assign(Symbol, () => null).to('store');
         await store.getDeeds().get();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test', {
           method: 'GET',
           headers: { test: 'true' },
         });
@@ -242,13 +242,13 @@ describe('Store', () => {
         const store = Store.assign(Symbol, () => null).to('store');
         await store.getDeeds().get();
 
-        expect(window.fetch).toHaveBeenNthCalledWith(1, 'test', {
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'test', {
           method: 'GET',
           headers: { Accept: 'test-accept-header' },
         });
       });
 
-      it('handles afterwards', async done => {
+      it('handles afterwards', done => {
         const storeClass = new Store({
           cargo: {},
           deeds: [
@@ -265,10 +265,10 @@ describe('Store', () => {
         });
 
         const store = Store.assign(Symbol, () => null).to('store');
-        await store.getDeeds().get();
+        store.getDeeds().get();
       });
 
-      it('handles thenDoes', async done => {
+      it('handles thenDoes', done => {
         const storeClass = new Store({
           cargo: {},
           deeds: [
@@ -286,14 +286,14 @@ describe('Store', () => {
         });
 
         const store = Store.assign(Symbol, () => null).to('store');
-        await store.getDeeds().get();
+        store.getDeeds().get();
       });
     });
 
     describe('invalid request', () => {
       beforeEach(() => {
         const headers = { get: prop => headers[prop] };
-        window.fetch = jest.fn(async () => ({
+        global.fetch = jest.fn(async () => ({
           headers,
           ok: false,
           status: 500,
@@ -325,7 +325,7 @@ describe('Store', () => {
         }
       });
 
-      it('sends error to catchError', async done => {
+      it('sends error to catchError', done => {
         const storeClass = new Store({
           cargo: {},
           deeds: [
@@ -342,14 +342,14 @@ describe('Store', () => {
         });
 
         const store = Store.assign(Symbol, () => null).to('store');
-        await store.getDeeds().get();
+        store.getDeeds().get();
       });
     });
 
     describe('non JSON request', () => {
       beforeEach(() => {
         const headers = { get: prop => headers[prop] };
-        window.fetch = jest.fn(async () => ({
+        global.fetch = jest.fn(async () => ({
           headers,
           ok: true,
           url: '/test',
@@ -359,7 +359,7 @@ describe('Store', () => {
         }));
       });
 
-      it('returns object with Error message', async done => {
+      it('returns object with Error message', done => {
         const storeClass = new Store({
           cargo: {},
           deeds: [
@@ -376,7 +376,7 @@ describe('Store', () => {
         });
 
         const store = Store.assign(Symbol, () => null).to('store');
-        await store.getDeeds().get();
+        store.getDeeds().get();
       });
     });
   });
