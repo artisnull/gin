@@ -8,6 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
     clean: true,
+    globalObject: 'this',
     library: {
       name: '@artisnull/gin',
       type: 'umd',
