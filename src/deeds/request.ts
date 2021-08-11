@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/class-name-casing */
 import {
   obj,
   DeedTypes,
@@ -7,6 +8,7 @@ import {
   FetchFunction,
   ResponseError,
 } from '../types';
+import { DocumentNode } from 'graphql';
 
 // tslint:disable-next-line: class-name
 interface request {
@@ -42,6 +44,7 @@ type QueryParamsDeedFunction = (paramsFunc: FetchFunction<obj<any>>) => RequestD
 type BodyDeedFunction = (bodyFunc: FetchFunction) => RequestDeed;
 
 type JSONDeedFunction = (bodyFunc: FetchFunction<obj<any>>) => RequestDeed;
+type AndVarsFunction = (andVarsFunc: FetchFunction<obj<any>>) => GqlRequestDeed;
 
 type VerbDeedFunction = (verb: HTTPVerbs) => RequestDeed;
 
@@ -68,54 +71,11 @@ export interface RequestProperties {
   catchError: RequestDeed['_catchError'];
   config: RequestDeed['_config'];
   headers: RequestDeed['_headers'];
+  node: RequestDeed['_node'];
+  vars: RequestDeed['_vars'];
 }
 
 type GetProperties = () => RequestProperties;
-export class RequestDeed {
-  public deedType: string = DeedTypes.request;
-  private _name: string;
-  private _path: FetchFunction<string> | string = '';
-  private _verb?: string;
-  private _queryParams?: FetchFunction<obj<any>>;
-  private _body?: FetchFunction;
-  private _json?: FetchFunction<obj<any>>;
-  private _after?: RequestFunction;
-  private _action?: ActionFunction;
-  private _catchError?: CatchFunction;
-  private _config?: FetchFunction<RequestInit>;
-  private _headers?: obj<string>;
-
-  constructor(name: string) {
-    this._name = name;
-  }
-  public hits: PathDeedFunction = arg => setAs(arg, '_path', this, 'string', 'function');
-  public withQueryParams: QueryParamsDeedFunction = arg =>
-    setAs(arg, '_queryParams', this, 'function');
-  public withBody: BodyDeedFunction = arg => setAs(arg, '_body', this, 'function');
-  public withJSON: JSONDeedFunction = arg => setAs(arg, '_json', this, 'function');
-  public withVerb: VerbDeedFunction = arg => setAs(arg, '_verb', this, 'string');
-  public withHeaders: HeadersFunction = arg => setAs(arg, '_headers', this, 'object');
-  public withConfig: ConfigDeedFunction = arg => setAs(arg, '_config', this, 'function');
-  public afterwards: AfterDeedFunction = arg => setAs(arg, '_after', this, 'function');
-  public thenDoes: ThenActionDeedFunction = arg => setAs(arg, '_action', this, 'function');
-  public catchError: CatchDeedFunction = arg => setAs(arg, '_catchError', this, 'function');
-
-  public getProperties: GetProperties = () => {
-    return {
-      name: this._name,
-      path: this._path,
-      action: this._action,
-      verb: this._verb,
-      queryParams: this._queryParams,
-      body: this._body,
-      json: this._json,
-      after: this._after,
-      catchError: this._catchError,
-      config: this._config,
-      headers: this._headers,
-    };
-  };
-}
 
 type SetAsFunc<T> = (value: any, name: string, dest: T, type: string, alternateType?: string) => T;
 export const setAs: SetAsFunc<RequestDeed> = (value, name, dest, type, alternateType) => {
@@ -134,6 +94,77 @@ export const setAs: SetAsFunc<RequestDeed> = (value, name, dest, type, alternate
   dest[name] = value;
   return dest;
 };
+
+type GqlRequestDeed = Omit<
+  RequestDeed,
+  'withBody' | 'withJSON' | 'withVerb' | 'withConfig' | 'withNode'
+>;
+
+type AndVarsOrDone = {
+  (this: RequestDeed): GqlRequestDeed;
+  andVars: AndVarsFunction;
+  // andVars: (this:RequestDeed, variablesFn: FetchFunction) => GqlRequestDeed;
+};
+const andVarsOrDone: AndVarsOrDone = function() {
+  return this;
+};
+andVarsOrDone.andVars = function(andVarsFunc) {
+  this['_vars'] = andVarsFunc;
+  return this;
+};
+export class RequestDeed {
+  public deedType: string = DeedTypes.request;
+  private _name: string;
+  private _path: FetchFunction<string> | string = '';
+  private _verb?: string;
+  private _queryParams?: FetchFunction<obj<any>>;
+  private _body?: FetchFunction;
+  private _json?: FetchFunction<obj<any>>;
+  private _after?: RequestFunction;
+  private _action?: ActionFunction;
+  private _catchError?: CatchFunction;
+  private _config?: FetchFunction<RequestInit>;
+  private _headers?: obj<string>;
+  private _node?: DocumentNode;
+  private _vars?: FetchFunction<obj<any>>;
+
+  constructor(name: string) {
+    this._name = name;
+  }
+  public hits: PathDeedFunction = arg => setAs(arg, '_path', this, 'string', 'function');
+  public withQueryParams: QueryParamsDeedFunction = arg =>
+    setAs(arg, '_queryParams', this, 'function');
+  public withBody: BodyDeedFunction = arg => setAs(arg, '_body', this, 'function');
+  public withJSON: JSONDeedFunction = arg => setAs(arg, '_json', this, 'function');
+  public withVerb: VerbDeedFunction = arg => setAs(arg, '_verb', this, 'string');
+  public withHeaders: HeadersFunction = arg => setAs(arg, '_headers', this, 'object');
+  public withConfig: ConfigDeedFunction = arg => setAs(arg, '_config', this, 'function');
+  public afterwards: AfterDeedFunction = arg => setAs(arg, '_after', this, 'function');
+  public thenDoes: ThenActionDeedFunction = arg => setAs(arg, '_action', this, 'function');
+  public catchError: CatchDeedFunction = arg => setAs(arg, '_catchError', this, 'function');
+  public withNode: (node: DocumentNode) => AndVarsOrDone = function(node) {
+    this['_node'] = node;
+    return andVarsOrDone;
+  };
+
+  public getProperties: GetProperties = () => {
+    return {
+      name: this._name,
+      path: this._path,
+      action: this._action,
+      verb: this._verb,
+      queryParams: this._queryParams,
+      body: this._body,
+      json: this._json,
+      after: this._after,
+      catchError: this._catchError,
+      config: this._config,
+      headers: this._headers,
+      node: this._node,
+      vars: this._vars,
+    };
+  };
+}
 
 const requestDeedFactory: RequestDeedFactory = name => {
   return new RequestDeed(name);

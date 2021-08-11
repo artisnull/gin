@@ -24,6 +24,7 @@ registerDeeds -> initStubDeed
 */
 import deepMerge from 'lodash/merge';
 import shortid from 'shortid';
+import obj2str from 'fast-safe-stringify';
 import { ActionDeed } from '../deeds/action';
 import { RequestDeed } from '../deeds/request';
 import StubDeed from '../test-utils/stub/stubDeed';
@@ -108,7 +109,7 @@ const defaultFetchResponse = res => {
   const isJson = isContentTypeJSON(res.headers.get('content-type'));
   if (!res.ok) {
     throw Error(
-      JSON.stringify({
+      obj2str({
         status: res.status,
         statusText: res.statusText,
         url: res.url,
@@ -181,7 +182,6 @@ class Store {
     Store.assign = Store._assign;
     Store._assign = undefined;
   };
-
 
   // @ts-ignore used to hold the old assign while being mocked
   private static _assign: any;
@@ -299,7 +299,7 @@ class Store {
 
       const additionalArgs = [];
       args.forEach(arg => {
-        additionalArgs.push(typeof arg === 'object' ? JSON.parse(JSON.stringify(arg)) : arg);
+        additionalArgs.push(typeof arg === 'object' ? JSON.parse(obj2str(arg)) : arg);
       });
       // tslint:disable-next-line: no-console , necessary for a debug tool
       const debugLog = console.log.bind(
@@ -348,28 +348,28 @@ class Store {
 
   private _generateAction: GenerateAction = (action, name) => {
     return async (...args) => {
-        let shouldSkipCargoUpdate = false;
-        let returnedDeedValue = null;
-  
-        const actionExtras: () => ActionExtras = () => ({
-          props: this._currentProps,
-          cargo: this._volatileCargo,
-          deeds: this._deeds,
-          skipShipment: () => {
-            shouldSkipCargoUpdate = true;
-          },
-        });
-        this._debugLog(`${name} does()`, 'Blue');
+      let shouldSkipCargoUpdate = false;
+      let returnedDeedValue = null;
 
-        // don't emit until we have a real value (await)
-        // @ts-ignore ts doesn't like parameters after a spread param
-        returnedDeedValue = await action(actionExtras(), ...args);
+      const actionExtras: () => ActionExtras = () => ({
+        props: this._currentProps,
+        cargo: this._volatileCargo,
+        deeds: this._deeds,
+        skipShipment: () => {
+          shouldSkipCargoUpdate = true;
+        },
+      });
+      this._debugLog(`${name} does()`, 'Blue');
 
-        if (!shouldSkipCargoUpdate) {
-          this._debugLog(`${name} queued cargo:`, 'DarkSalmon', returnedDeedValue);
-          return this._enqueue(returnedDeedValue);
-        }
-        return returnedDeedValue
+      // don't emit until we have a real value (await)
+      // @ts-ignore ts doesn't like parameters after a spread param
+      returnedDeedValue = await action(actionExtras(), ...args);
+
+      if (!shouldSkipCargoUpdate) {
+        this._debugLog(`${name} queued cargo:`, 'DarkSalmon', returnedDeedValue);
+        return this._enqueue(returnedDeedValue);
+      }
+      return returnedDeedValue;
     };
   };
 
@@ -405,6 +405,8 @@ class Store {
       headers,
       queryParams,
       verb = 'GET',
+      vars,
+      node,
     } = deed.getProperties();
 
     if (this._deeds[name]) {
@@ -474,8 +476,15 @@ class Store {
 
       /* JSON */
       if (json) {
-        fetchConfig.body = JSON.stringify(json(fetchExtras(), ...args));
+        fetchConfig.body = obj2str(json(fetchExtras(), ...args));
         fetchConfig.headers['content-type'] = 'application/json; charset=utf-8';
+      }
+
+      if (node) {
+        fetchConfig.body = obj2str({
+          query: node,
+          variables: vars ? vars(fetchExtras(), ...args) : '',
+        });
       }
 
       /* HEADERS */

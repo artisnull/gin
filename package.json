@@ -45,6 +45,8 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "fast-safe-stringify": "^2.0.8",
+    "graphql": "^15.5.1",
     "jest": "^27.0.6",
     "parcel-bundler": "^1.12.5",
     "prettier": "^1.19.1",
