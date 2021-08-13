@@ -6,7 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "NODE_ENV=production npx webpack && yarn declarations",
-    "dev": "npx parcel watch src/index.ts --target node",
+    "dev": "NODE_ENV=development npx webpack --watch",
     "declarations": "NODE_ENV=production npx tsc -p ./tsconfig.json",
     "test": "jest",
     "test-watch": "jest --watch",
@@ -28,7 +28,7 @@
   "author": "Zachariah Lambert",
   "license": "MIT",
   "dependencies": {
-    "core-js": "2",
+    "core-js": "3.x",
     "shortid": "^2.2.16"
   },
   "devDependencies": {
@@ -77,5 +77,6 @@
         "statements": 100
       }
     }
-  }
+  },
+  "browserslist": "> 0.25%, not dead"
 }

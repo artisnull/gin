@@ -1,5 +1,8 @@
 import request, { RequestDeed, setAs, HTTPVerbs } from '../request';
 import { DeedTypes } from '../../types';
+import { DocumentNode } from 'graphql';
+
+const testDocumentNode: DocumentNode = { "kind": "Document", "definitions": [{ "kind": "OperationDefinition", "operation": "query", "name": { "kind": "Name", "value": "GetSignedUploadUrls" }, "selectionSet": { "kind": "SelectionSet", "selections": [{ "kind": "Field", "name": { "kind": "Name", "value": "signedUploadUrl" } }] } }] }
 
 describe('deed.request', () => {
   describe('request', () => {
@@ -10,7 +13,7 @@ describe('deed.request', () => {
   });
 
   describe('RequestDeed', () => {
-    it('handles normal flow', () => {
+    it.only('handles normal flow', () => {
       const testFn = jest.fn();
       const expected = {
         name: 'test',
@@ -24,6 +27,8 @@ describe('deed.request', () => {
         catchError: testFn,
         config: testFn,
         headers: {},
+        node: testDocumentNode,
+        vars: testFn
       };
 
       const TestDeed = new RequestDeed('test');
@@ -40,7 +45,8 @@ describe('deed.request', () => {
       TestDeed.withConfig(expected.config);
       TestDeed.catchError(expected.catchError);
       TestDeed.withHeaders(expected.headers);
-
+      TestDeed.withNode(expected.node).andVars(expected.vars)
+      expect(TestDeed.deedType).toEqual(DeedTypes.request);
       expect(TestDeed.getProperties()).toMatchObject(expected);
     });
 

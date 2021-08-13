@@ -44,7 +44,7 @@ type QueryParamsDeedFunction = (paramsFunc: FetchFunction<obj<any>>) => RequestD
 type BodyDeedFunction = (bodyFunc: FetchFunction) => RequestDeed;
 
 type JSONDeedFunction = (bodyFunc: FetchFunction<obj<any>>) => RequestDeed;
-type AndVarsFunction = (andVarsFunc: FetchFunction<obj<any>>) => GqlRequestDeed;
+type AndVarsFunction = (this: RequestDeed, andVarsFunc: FetchFunction<obj<any>>) => GqlRequestDeed;
 
 type VerbDeedFunction = (verb: HTTPVerbs) => RequestDeed;
 
@@ -103,15 +103,8 @@ type GqlRequestDeed = Omit<
 type AndVarsOrDone = {
   (this: RequestDeed): GqlRequestDeed;
   andVars: AndVarsFunction;
-  // andVars: (this:RequestDeed, variablesFn: FetchFunction) => GqlRequestDeed;
 };
-const andVarsOrDone: AndVarsOrDone = function() {
-  return this;
-};
-andVarsOrDone.andVars = function(andVarsFunc) {
-  this['_vars'] = andVarsFunc;
-  return this;
-};
+
 export class RequestDeed {
   public deedType: string = DeedTypes.request;
   private _name: string;
@@ -142,9 +135,14 @@ export class RequestDeed {
   public afterwards: AfterDeedFunction = arg => setAs(arg, '_after', this, 'function');
   public thenDoes: ThenActionDeedFunction = arg => setAs(arg, '_action', this, 'function');
   public catchError: CatchDeedFunction = arg => setAs(arg, '_catchError', this, 'function');
-  public withNode: (node: DocumentNode) => AndVarsOrDone = function(node) {
+  public withNode: (node: DocumentNode) => AndVarsOrDone = node => {
     this['_node'] = node;
-    return andVarsOrDone;
+    const avod: AndVarsOrDone = () => this;
+    avod.andVars = andVarsFunc => {
+      this['_vars'] = andVarsFunc;
+      return this;
+    };
+    return avod;
   };
 
   public getProperties: GetProperties = () => {
