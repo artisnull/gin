@@ -479,7 +479,8 @@ class Store {
 
       if (node) {
         fetchConfig.method = 'POST'
-        fetchConfig.headers['content-type'] = 'application/json;';
+        fetchConfig.headers['Content-Type'] = 'application/json';
+        fetchConfig.headers['Accept'] = 'application/json';
         fetchConfig.body = obj2str({
           query: print(node),
           variables: vars ? vars(fetchExtras(), ...args)[0] : '',
