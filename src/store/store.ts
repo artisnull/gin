@@ -109,13 +109,9 @@ const isContentTypeJSON = (contentType: string) => {
 const defaultFetchResponse = res => {
   const isJson = isContentTypeJSON(res.headers.get('content-type'));
   if (!res.ok) {
-    throw Error(
-      obj2str({
-        status: res.status,
-        statusText: res.statusText,
-        url: res.url,
-      }),
-    );
+    res.json().then(e => {
+      throw e;
+    });
   }
 
   if (!isJson) {
@@ -484,7 +480,7 @@ class Store {
       if (node) {
         fetchConfig.body = obj2str({
           query: print(node),
-          variables: vars ? vars(fetchExtras(), ...args) : '',
+          variables: vars ? vars(fetchExtras(), ...args)[0] : '',
         });
       }
 
