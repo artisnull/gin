@@ -45,6 +45,7 @@ import {
   Subscribe,
   Unsubscribe,
 } from '../types';
+import { print } from 'graphql';
 
 type ActionDeedInit = (deed: ActionDeed, pid?: string) => void;
 
@@ -482,7 +483,7 @@ class Store {
 
       if (node) {
         fetchConfig.body = obj2str({
-          query: node,
+          query: print(node),
           variables: vars ? vars(fetchExtras(), ...args) : '',
         });
       }
