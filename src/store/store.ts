@@ -483,7 +483,7 @@ class Store {
         fetchConfig.headers['Accept'] = 'application/json';
         fetchConfig.body = obj2str({
           query: print(node),
-          variables: vars ? vars(fetchExtras(), ...args)[0] : '',
+          variables: vars ? vars(fetchExtras(), ...args) : '',
         });
       }
 
